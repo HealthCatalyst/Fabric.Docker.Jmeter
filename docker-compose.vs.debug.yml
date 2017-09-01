@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  fabric.apdexcalculator:
+    image: fabric.apdexcalculator:dev
+    build:
+      args:
+        source: ${DOCKER_BUILD_SOURCE}
+    volumes:
+      - ./Fabric.ApdexCalculator:/app
+      - ~/.nuget/packages:/root/.nuget/packages:ro
+      - ~/clrdbg:/clrdbg:ro
+    entrypoint: tail -f /dev/null
+    labels:
+      - "com.microsoft.visualstudio.targetoperatingsystem=linux"

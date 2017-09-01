@@ -1,0 +1,8 @@
+version: '2'
+
+services:
+  fabric.apdexcalculator:
+    image: fabric.apdexcalculator
+    build:
+      context: ./Fabric.ApdexCalculator
+      dockerfile: Dockerfile
