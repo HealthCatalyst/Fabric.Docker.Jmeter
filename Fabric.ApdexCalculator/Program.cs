@@ -14,10 +14,25 @@ namespace Fabric.ApdexCalculator
         private static double ApdexThreshold = .8;
         static void Main(string[] args)
         {
-            var appSettings = args[0];
-            if (String.IsNullOrEmpty(appSettings))
+            var resultsFile = "";
+            var appSettings = "";
+            if(args.Length == 0)
             {
+                System.Console.WriteLine("Need to supply 1 or 2 arguments");
+            }
+            else if(args.Length == 1)
+            {
+                resultsFile = args[0];
                 appSettings = "appSettings.json";
+            }
+            else if(args.Length == 2)
+            {
+                appSettings = args[0];
+                resultsFile = args[1];
+            }
+            else if(args.Length > 2)
+            {
+                System.Console.WriteLine("Only takes 1 or 2 arguments");
             }
             var config = new ConfigurationBuilder()
                 .AddJsonFile(appSettings)
@@ -26,7 +41,7 @@ namespace Fabric.ApdexCalculator
 
             var appConfig = new AppSettings();
             ConfigurationBinder.Bind(config, appConfig);
-            var samples = ReadResultsFile(args[1]);
+            var samples = ReadResultsFile(resultsFile);
             var results = new Dictionary<string, double>();
             foreach (var measure in appConfig.Measures)
             {
