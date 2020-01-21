@@ -14,14 +14,34 @@ namespace Fabric.ApdexCalculator
         private static double ApdexThreshold = .8;
         static void Main(string[] args)
         {
+            var resultsFile = "";
+            var appSettings = "";
+            if(args.Length == 0)
+            {
+                System.Console.WriteLine("Need to supply 1 or 2 arguments");
+            }
+            else if(args.Length == 1)
+            {
+                resultsFile = args[0];
+                appSettings = "appSettings.json";
+            }
+            else if(args.Length == 2)
+            {
+                appSettings = args[0];
+                resultsFile = args[1];
+            }
+            else if(args.Length > 2)
+            {
+                System.Console.WriteLine("Only takes 1 or 2 arguments");
+            }
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appSettings.json")
+                .AddJsonFile(appSettings)
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .Build();
 
             var appConfig = new AppSettings();
             ConfigurationBinder.Bind(config, appConfig);
-            var samples = ReadResultsFile(args[0]);
+            var samples = ReadResultsFile(resultsFile);
             var results = new Dictionary<string, double>();
             foreach (var measure in appConfig.Measures)
             {
@@ -40,13 +60,13 @@ namespace Fabric.ApdexCalculator
         private static double CalculateApdex(Measure measure, IEnumerable<Sample> samples)
         {
 
-            var satisfiedCount = (double) samples.Count(s => s.Label == measure.Name &&
-                                                             s.Elapsed <= measure.TolerationThreshold && s.Success);
-            var toleratedCount = (double) samples.Count(s => s.Label == measure.Name &&
-                                                             s.Elapsed > measure.TolerationThreshold &&
-                                                             s.Elapsed <= measure.FrustrationThreshold && s.Success);
+            var satisfiedCount = (double)samples.Count(s => s.Label == measure.Name &&
+                                                            s.Elapsed <= measure.TolerationThreshold && s.Success);
+            var toleratedCount = (double)samples.Count(s => s.Label == measure.Name &&
+                                                            s.Elapsed > measure.TolerationThreshold &&
+                                                            s.Elapsed <= measure.FrustrationThreshold && s.Success);
             var totalSamples = (double)samples.Count(s => s.Label == measure.Name);
-            var apdex = (satisfiedCount + toleratedCount/2) / totalSamples;
+            var apdex = (satisfiedCount + toleratedCount / 2) / totalSamples;
             Console.ForegroundColor = apdex < ApdexThreshold ? ConsoleColor.Red : ConsoleColor.Gray;
             Console.WriteLine($"Name: {measure.Name}, Total Samples: {totalSamples}, SatisfiedCount: {satisfiedCount}, ToleratedCount: {toleratedCount}, Apdex: {apdex.ToString("F3", CultureInfo.InvariantCulture)}");
             return apdex;
@@ -56,7 +76,8 @@ namespace Fabric.ApdexCalculator
         {
             var samples = new List<Sample>();
             var allLines = File.ReadAllLines(filePath);
-            foreach(var line in allLines) { 
+            foreach (var line in allLines)
+            {
                 var segments = line.Split(',');
                 if (segments[0] == "timeStamp")
                 {
